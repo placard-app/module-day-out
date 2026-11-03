@@ -8,7 +8,7 @@ eight stops. The anchor can sit anywhere in the sequence. Save explicitly.
 
 Requires SDK 1, `persistent-data`, Node.js 24+ and permissions `places.read` and
 `search.query`. Build with `pnpm --filter @placard-official/places.day-out build`
-and upload `dist/places.day-out-0.1.0.placard-module` (or ZIP) in the marketplace.
+and upload `dist/places.day-out-0.1.1.placard-module` (or ZIP) in the marketplace.
 Enable it and show Day Out in navigation. The command palette offers Plan a Day Out.
 After publishing, the GitHub selector is `https://github.com/JobiJoba/plugins#places.day-out`.
 
@@ -65,3 +65,15 @@ Run `pnpm typecheck`, `pnpm test`, `pnpm build` from the workspace. Real-host br
 coverage uses `pnpm --filter @placard-official/places.day-out test:e2e` and requires
 Docker, Playwright Chromium and a built sibling `Placard` checkout (override with
 `PLACARD_CORE_DIR`). Browser artifacts go to `test-results/`.
+
+## Marketing screenshots
+
+Run `pnpm build` at the workspace root, then
+`pnpm --filter @placard-official/places.day-out screenshots` to capture all four
+installed modules against a disposable host with fictional Brussels demo places.
+Requires the same Docker/core/Chromium setup as browser tests. PNGs are written to
+`test-results/marketing-{day-out,board,menus,pick}.png`. Copy them to the core
+checkout's `apps/site/public/plugins/{day-out,board,menus,pick}-desktop.png` when
+refreshing the marketing page. This separate suite does not touch your live instance.
+Day Out includes a dedicated landscape cover for marketplace cards and a square
+navigation icon; both are bundled with the installable package.

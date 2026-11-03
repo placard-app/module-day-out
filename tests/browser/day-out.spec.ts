@@ -23,7 +23,7 @@ test("installed Day Out supports an editable private outing on desktop and mobil
     headers,
     data: {
       filename: "places.day-out.zip",
-      contentBase64: readFileSync("dist/places.day-out-0.1.0.zip").toString("base64"),
+      contentBase64: readFileSync("dist/places.day-out-0.1.1.zip").toString("base64"),
     },
   })
   expect(install.ok(), await install.text()).toBeTruthy()
@@ -52,13 +52,13 @@ test("installed Day Out supports an editable private outing on desktop and mobil
   await page.getByRole("button", { name: "Search places" }).click()
   await page.getByRole("button", { name: "Anchor museum · museum" }).click()
   await page.getByRole("button", { name: "Suggest stops", exact: true }).click()
-  await expect(page.getByRole("heading", { name: /1\. Coffee/ })).toBeVisible()
-  const first = await page.getByRole("heading", { name: /1\. Coffee/ }).textContent()
+  await expect(page.getByRole("heading", { name: /Coffee/ })).toBeVisible()
+  const first = await page.getByRole("heading", { name: /Coffee/ }).textContent()
   await page.getByRole("button", { name: "Replace suggestion", exact: true }).first().click()
-  await expect(page.getByRole("heading", { name: /1\. Coffee/ })).not.toHaveText(first!)
+  await expect(page.getByRole("heading", { name: /Coffee/ })).not.toHaveText(first!)
   await page.getByRole("button", { name: "Move stop 1 down", exact: true }).focus()
   await page.keyboard.press("Enter")
-  await expect(page.getByRole("heading", { name: "1. Anchor museum · Anchor" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Anchor museum" })).toBeVisible()
   await expect(page.getByText(/km straight-line/).first()).toBeVisible()
   await page.getByText("Stored opening hours", { exact: true }).first().click()
   await expect(page.getByText(/Opening hours unavailable/).first()).toBeVisible()
@@ -68,12 +68,14 @@ test("installed Day Out supports an editable private outing on desktop and mobil
   )
   await page.getByRole("button", { name: "Save outing", exact: true }).click()
   await expect(page.getByText("Unsaved changes", { exact: true })).toHaveCount(0)
+  await page.locator("h1").click()
+  await page.screenshot({ path: "test-results/day-out-desktop.png", fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy()
   await page.screenshot({ path: "test-results/day-out-mobile.png", fullPage: true })
   await page.getByRole("button", { name: "Back to outings" }).click()
   await page.getByRole("button", { name: /Open Day out around/ }).click()
-  await expect(page.getByRole("heading", { name: "1. Anchor museum · Anchor" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Anchor museum" })).toBeVisible()
   await page.getByLabel("Outing title").fill("Changed")
   page.once("dialog", (d) => d.dismiss())
   await page.getByRole("button", { name: "Back to outings" }).click()

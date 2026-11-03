@@ -1,7 +1,7 @@
 {
   "id": "places.day-out",
   "name": "Day Out",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Build a day around a saved place.",
   "permissions": [
     "places.read",
@@ -58,5 +58,6 @@
       "name": "delete_outing",
       "description": "delete outing"
     }
-  ]
+  ],
+  "cover": "web/assets/cover.svg"
 }

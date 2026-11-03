@@ -1,3 +1,4 @@
+import { styles } from "./styles.ts"
 import { useState, useEffect } from "react"
 import { categories, distance, type Draft, type Place, type Outing } from "../shared/outing.ts"
 const base = "/api/m/places.day-out/"
@@ -127,12 +128,21 @@ export function DayOutPage() {
   }
   return (
     <main className="day-out">
-      <style>{`.day-out{max-width:920px;margin:auto;padding:24px;color:inherit}.day-out button,.day-out input,.day-out select{font:inherit;padding:9px 12px;border:1px solid #8b9b95;border-radius:8px;background:var(--card,#fff);color:#183d32}.day-out button{cursor:pointer}.day-out button:disabled{opacity:.45;cursor:default}.day-out .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}.day-out article{border:1px solid #8b9b9560;border-radius:14px;padding:18px;margin:16px 0}.day-out img{width:100%;max-height:200px;object-fit:cover;border-radius:10px}.day-out a{color:inherit;text-decoration:underline}.day-out label{display:grid;gap:5px}.day-out .muted{opacity:.7}.day-out h1{font-size:32px}.day-out h2{font-size:22px}.day-out input{max-width:100%;box-sizing:border-box}.day-out button:focus-visible,.day-out a:focus-visible{outline:3px solid #d99f24;outline-offset:3px}`}</style>
-      <h1>Day Out</h1>
-      <p>Build an outing around a place you love.</p>
+      <style>{styles}</style>
+      <header className="intro">
+        <div>
+          <div className="eyebrow">A little closer to somewhere new</div>
+          <h1>Day Out</h1>
+          <p>Your places. A whole day of possibilities.</p>
+        </div>
+        <div className="brand-mark" aria-hidden="true">
+          ↝
+        </div>
+      </header>
       {error && <p role="alert">{error}</p>}
-      <div className="row">
+      <div className="row toolbar">
         <button
+          className="primary"
           disabled={busy}
           onClick={() => {
             if (leave()) {
@@ -165,7 +175,7 @@ export function DayOutPage() {
       {!draft ? (
         saved.length ? (
           saved.map((o) => (
-            <article key={o.id}>
+            <article className="saved-card" key={o.id}>
               <h2>{o.draft.title}</h2>
               <p>{o.draft.slots.length} stops</p>
               <button
@@ -185,12 +195,28 @@ export function DayOutPage() {
             </article>
           ))
         ) : (
-          <p>No saved outings yet. Choose New outing to begin.</p>
+          <div className="welcome">
+            <div className="eyebrow">Make a day of it</div>
+            <h2>One favourite place is just the beginning.</h2>
+            <p>No saved outings yet. Choose New outing to begin.</p>
+          </div>
         )
       ) : (
         <>
           {(draft.slots.length === 0 || choosing !== null) && (
-            <section aria-label="Choose a place">
+            <section className="chooser" aria-label="Choose a place">
+              <div className="eyebrow">
+                {draft.slots.length ? "Find a new stop" : "Start somewhere you love"}
+              </div>
+              <h2>
+                {draft.slots.length ? "Choose from your library" : "What’s the day built around?"}
+              </h2>
+              <p>Pick a place. We’ll help you find the good things around it.</p>
+              {draft.slots.length > 0 && (
+                <button className="ghost" onClick={() => setChoosing(null)}>
+                  Cancel selection
+                </button>
+              )}
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
@@ -209,294 +235,342 @@ export function DayOutPage() {
                 </label>
                 <button disabled={busy}>Search places</button>
               </form>
-              {hits
-                .filter((p) => !draft.slots.some((s) => s.placeId === p.id))
-                .map((p) => (
-                  <p key={p.id}>
-                    <button disabled={busy} onClick={() => choose(p)}>
-                      {p.name} · {p.category}
-                    </button>
-                  </p>
-                ))}
+              <div className="results">
+                {hits
+                  .filter((p) => !draft.slots.some((s) => s.placeId === p.id))
+                  .map((p) => (
+                    <p key={p.id}>
+                      <button disabled={busy} onClick={() => choose(p)}>
+                        {p.name} · {p.category}
+                      </button>
+                    </p>
+                  ))}
+              </div>
             </section>
           )}
           {draft.slots.length > 0 && (
-            <>
-              <label>
-                Outing title
-                <input
-                  value={draft.title}
-                  onChange={(e) => edit({ ...draft, title: e.target.value })}
-                />
-              </label>
-              <div className="row">
+            <div className="workspace">
+              <aside className="planner">
+                <div>
+                  <div className="eyebrow">The plan</div>
+                  <h2>Around your anchor</h2>
+                </div>
                 <label>
-                  Radius
-                  <select
-                    value={draft.filters.radiusKm}
-                    onChange={(e) =>
-                      edit({
-                        ...draft,
-                        filters: {
-                          ...draft.filters,
-                          radiusKm: Number(e.target.value) as Draft["filters"]["radiusKm"],
-                        },
-                      })
-                    }
-                  >
-                    {[1, 2, 5, 10, 25].map((n) => (
-                      <option key={n} value={n}>
-                        {n} km
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  List
-                  <select
-                    value={draft.filters.list ?? ""}
-                    onChange={(e) =>
-                      edit({
-                        ...draft,
-                        filters: { ...draft.filters, list: e.target.value || undefined },
-                      })
-                    }
-                  >
-                    <option value="">All lists</option>
-                    {lists.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Tag
-                  <select
-                    value={draft.filters.tag ?? ""}
-                    onChange={(e) =>
-                      edit({
-                        ...draft,
-                        filters: { ...draft.filters, tag: e.target.value || undefined },
-                      })
-                    }
-                  >
-                    <option value="">All tags</option>
-                    {tags.map((t) => (
-                      <option key={t.name}>{t.name}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
+                  Outing title
                   <input
-                    type="checkbox"
-                    checked={!!draft.filters.status}
-                    onChange={(e) =>
+                    value={draft.title}
+                    onChange={(e) => edit({ ...draft, title: e.target.value })}
+                  />
+                </label>
+                <div className="row">
+                  <label>
+                    Radius
+                    <select
+                      value={draft.filters.radiusKm}
+                      onChange={(e) =>
+                        edit({
+                          ...draft,
+                          filters: {
+                            ...draft.filters,
+                            radiusKm: Number(e.target.value) as Draft["filters"]["radiusKm"],
+                          },
+                        })
+                      }
+                    >
+                      {[1, 2, 5, 10, 25].map((n) => (
+                        <option key={n} value={n}>
+                          {n} km
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    List
+                    <select
+                      value={draft.filters.list ?? ""}
+                      onChange={(e) =>
+                        edit({
+                          ...draft,
+                          filters: { ...draft.filters, list: e.target.value || undefined },
+                        })
+                      }
+                    >
+                      <option value="">All lists</option>
+                      {lists.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          {l.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Tag
+                    <select
+                      value={draft.filters.tag ?? ""}
+                      onChange={(e) =>
+                        edit({
+                          ...draft,
+                          filters: { ...draft.filters, tag: e.target.value || undefined },
+                        })
+                      }
+                    >
+                      <option value="">All tags</option>
+                      {tags.map((t) => (
+                        <option key={t.name}>{t.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={!!draft.filters.status}
+                      onChange={(e) =>
+                        edit({
+                          ...draft,
+                          filters: {
+                            ...draft.filters,
+                            status: e.target.checked ? "want_to_go" : undefined,
+                          },
+                        })
+                      }
+                    />
+                    Want to go only
+                  </label>
+                </div>
+                <p className="muted">
+                  Filters apply when requesting suggestions. The anchor stays selected.
+                </p>
+                <button
+                  className="primary"
+                  disabled={busy}
+                  onClick={() => void run(() => generate())}
+                >
+                  Suggest stops
+                </button>
+              </aside>
+              <section aria-label="Your itinerary">
+                <div className="timeline-title">
+                  <h2>Your itinerary</h2>
+                  <span>{draft.slots.length} stops · a day your way</span>
+                </div>
+                <div className="timeline">
+                  {draft.slots.map((s, i) => {
+                    const p = s.placeId ? places[s.placeId] : undefined,
+                      prev = i ? places[draft.slots[i - 1].placeId ?? ""] : undefined
+                    return (
+                      <article
+                        className={`stop ${s.anchor ? "anchor" : ""} ${!p ? "empty" : ""}`}
+                        key={i}
+                        aria-label={`Stop ${i + 1}`}
+                      >
+                        <span className="number" aria-hidden="true">
+                          {i + 1}
+                        </span>
+                        <div className="stop-body">
+                          <div className="stop-top">
+                            <div className="stop-copy">
+                              {s.anchor && <span className="badge">The anchor</span>}
+                              <h2>
+                                {p?.name ?? (s.placeId ? "Place unavailable" : "No matching place")}
+                              </h2>
+                            </div>
+                            {p?.coverThumbUrl && <img src={p.coverThumbUrl} alt="" />}
+                          </div>
+                          {p ? (
+                            <>
+                              <p>
+                                {p.category} · {p.address ?? "Address unavailable"}
+                              </p>
+                              {prev && (
+                                <p>
+                                  {(distance(prev.location, p.location) / 1000).toFixed(2)} km
+                                  straight-line from previous stop
+                                </p>
+                              )}
+                              <details>
+                                <summary>Stored opening hours</summary>
+                                {hours(p).length ? (
+                                  hours(p).map((line) => <p key={line}>{line}</p>)
+                                ) : (
+                                  <p>Opening hours unavailable. Check the place before visiting.</p>
+                                )}
+                              </details>
+                              {p.facts?.fromGoogle && (
+                                <small>Place information from Google Maps</small>
+                              )}
+                              <div className="row links">
+                                <a href={`/places/${encodeURIComponent(p.id)}`}>Place details</a>
+                                <a
+                                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${p.location.lat},${p.location.lng}`)}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Navigate
+                                </a>
+                              </div>
+                            </>
+                          ) : (
+                            <p>
+                              Change category, widen the radius, choose a place or remove this stop.
+                            </p>
+                          )}
+                        </div>
+                        <div className="stop-actions">
+                          {!s.anchor && (
+                            <label>
+                              Category
+                              <select
+                                value={s.category}
+                                onChange={(e) =>
+                                  edit({
+                                    ...draft,
+                                    slots: draft.slots.map((v, j) =>
+                                      j === i
+                                        ? {
+                                            ...v,
+                                            category: e.target.value as typeof s.category,
+                                            placeId: null,
+                                          }
+                                        : v,
+                                    ),
+                                  })
+                                }
+                              >
+                                {categories.map((c) => (
+                                  <option key={c}>{c}</option>
+                                ))}
+                              </select>
+                            </label>
+                          )}
+                          <button
+                            disabled={busy}
+                            onClick={() => {
+                              setChoosing(i)
+                              setHits([])
+                            }}
+                          >
+                            Choose {s.anchor ? "anchor" : "place"}
+                          </button>
+                          {!s.anchor && (
+                            <button
+                              title="Replace suggestion"
+                              aria-label="Replace suggestion"
+                              disabled={busy}
+                              onClick={() => void run(() => generate(i))}
+                            >
+                              ↻ Swap
+                            </button>
+                          )}
+                          <button
+                            disabled={busy || i === 0}
+                            aria-label={`Move stop ${i + 1} up`}
+                            onClick={() => move(i, -1)}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            disabled={busy || i === draft.slots.length - 1}
+                            aria-label={`Move stop ${i + 1} down`}
+                            onClick={() => move(i, 1)}
+                          >
+                            ↓
+                          </button>
+                          {!s.anchor && (
+                            <button
+                              className="remove"
+                              aria-label="Remove stop"
+                              title="Remove stop"
+                              disabled={busy}
+                              onClick={() =>
+                                edit({ ...draft, slots: draft.slots.filter((_, j) => i !== j) })
+                              }
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+                <div className="footer">
+                  <span className="save-status" role="status">
+                    {dirty ? "Unsaved changes" : "All changes saved"}
+                  </span>
+                  <button
+                    disabled={busy || draft.slots.length >= 8}
+                    onClick={() =>
                       edit({
                         ...draft,
-                        filters: {
-                          ...draft.filters,
-                          status: e.target.checked ? "want_to_go" : undefined,
-                        },
+                        slots: [...draft.slots, { category: "park", placeId: null, anchor: false }],
                       })
                     }
-                  />
-                  Want to go only
-                </label>
-              </div>
-              <p className="muted">
-                Filters apply when requesting suggestions. The anchor stays selected.
-              </p>
-              <button disabled={busy} onClick={() => void run(() => generate())}>
-                Suggest stops
-              </button>
-              {draft.slots.map((s, i) => {
-                const p = s.placeId ? places[s.placeId] : undefined,
-                  prev = i ? places[draft.slots[i - 1].placeId ?? ""] : undefined
-                return (
-                  <article key={i} aria-label={`Stop ${i + 1}`}>
-                    <h2>
-                      {i + 1}. {p?.name ?? (s.placeId ? "Place unavailable" : "No matching place")}
-                      {s.anchor ? " · Anchor" : ""}
-                    </h2>
-                    {p ? (
-                      <>
-                        {p.coverThumbUrl && <img src={p.coverThumbUrl} alt="" />}
-                        <p>
-                          {p.category} · {p.address ?? "Address unavailable"}
-                        </p>
-                        {prev && (
-                          <p>
-                            {(distance(prev.location, p.location) / 1000).toFixed(2)} km
-                            straight-line from previous stop
-                          </p>
-                        )}
-                        <details>
-                          <summary>Stored opening hours</summary>
-                          {hours(p).length ? (
-                            hours(p).map((line) => <p key={line}>{line}</p>)
-                          ) : (
-                            <p>Opening hours unavailable. Check the place before visiting.</p>
-                          )}
-                        </details>
-                        {p.facts?.fromGoogle && <small>Place information from Google Maps</small>}
-                        <div className="row">
-                          <a href={`/places/${encodeURIComponent(p.id)}`}>Place details</a>
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${p.location.lat},${p.location.lng}`)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Navigate
-                          </a>
-                        </div>
-                      </>
-                    ) : (
-                      <p>Change category, widen the radius, choose a place or remove this stop.</p>
-                    )}
-                    <div className="row">
-                      {!s.anchor && (
-                        <label>
-                          Category
-                          <select
-                            value={s.category}
-                            onChange={(e) =>
-                              edit({
-                                ...draft,
-                                slots: draft.slots.map((v, j) =>
-                                  j === i
-                                    ? {
-                                        ...v,
-                                        category: e.target.value as typeof s.category,
-                                        placeId: null,
-                                      }
-                                    : v,
-                                ),
-                              })
-                            }
-                          >
-                            {categories.map((c) => (
-                              <option key={c}>{c}</option>
-                            ))}
-                          </select>
-                        </label>
-                      )}
+                  >
+                    Add stop
+                  </button>
+                  <button
+                    className="primary"
+                    disabled={busy || !dirty || draft.slots.some((s) => !s.placeId)}
+                    onClick={() =>
+                      void run(async () => {
+                        const data = await api(
+                          record ? `outings/${record.id}` : "outings",
+                          record ? "PUT" : "POST",
+                          {
+                            draft,
+                            requestId: crypto.randomUUID(),
+                            ...(record ? { expectedRevision: record.revision } : {}),
+                          },
+                        )
+                        setRecord({ ...data, places })
+                        setDraft(data.draft)
+                        setDirty(false)
+                        setSaved(await api("outings"))
+                      })
+                    }
+                  >
+                    Save outing
+                  </button>
+                  {record && (
+                    <>
                       <button
                         disabled={busy}
                         onClick={() => {
-                          setChoosing(i)
-                          setHits([])
+                          if (leave())
+                            void run(async () => {
+                              const data = await api(`outings/${record.id}`)
+                              setRecord(data)
+                              setDraft(data.draft)
+                              setPlaces(data.places)
+                              setDirty(false)
+                            })
                         }}
                       >
-                        Choose {s.anchor ? "anchor" : "place"}
-                      </button>
-                      {!s.anchor && (
-                        <button disabled={busy} onClick={() => void run(() => generate(i))}>
-                          Replace suggestion
-                        </button>
-                      )}
-                      <button
-                        disabled={busy || i === 0}
-                        aria-label={`Move stop ${i + 1} up`}
-                        onClick={() => move(i, -1)}
-                      >
-                        ↑ Up
+                        Reload saved outing
                       </button>
                       <button
-                        disabled={busy || i === draft.slots.length - 1}
-                        aria-label={`Move stop ${i + 1} down`}
-                        onClick={() => move(i, 1)}
-                      >
-                        ↓ Down
-                      </button>
-                      {!s.anchor && (
-                        <button
-                          disabled={busy}
-                          onClick={() =>
-                            edit({ ...draft, slots: draft.slots.filter((_, j) => i !== j) })
-                          }
-                        >
-                          Remove stop
-                        </button>
-                      )}
-                    </div>
-                  </article>
-                )
-              })}
-              <div className="row">
-                <button
-                  disabled={busy || draft.slots.length >= 8}
-                  onClick={() =>
-                    edit({
-                      ...draft,
-                      slots: [...draft.slots, { category: "park", placeId: null, anchor: false }],
-                    })
-                  }
-                >
-                  Add stop
-                </button>
-                <button
-                  disabled={busy || !dirty || draft.slots.some((s) => !s.placeId)}
-                  onClick={() =>
-                    void run(async () => {
-                      const data = await api(
-                        record ? `outings/${record.id}` : "outings",
-                        record ? "PUT" : "POST",
-                        {
-                          draft,
-                          requestId: crypto.randomUUID(),
-                          ...(record ? { expectedRevision: record.revision } : {}),
-                        },
-                      )
-                      setRecord({ ...data, places })
-                      setDraft(data.draft)
-                      setDirty(false)
-                      setSaved(await api("outings"))
-                    })
-                  }
-                >
-                  Save outing
-                </button>
-                {record && (
-                  <>
-                    <button
-                      disabled={busy}
-                      onClick={() => {
-                        if (leave())
-                          void run(async () => {
-                            const data = await api(`outings/${record.id}`)
-                            setRecord(data)
-                            setDraft(data.draft)
-                            setPlaces(data.places)
-                            setDirty(false)
-                          })
-                      }}
-                    >
-                      Reload saved outing
-                    </button>
-                    <button
-                      disabled={busy}
-                      onClick={() => {
-                        if (window.confirm("Delete this outing?"))
-                          void run(async () => {
-                            await api(`outings/${record.id}`, "DELETE", {
-                              expectedRevision: record.revision,
-                              requestId: crypto.randomUUID(),
+                        disabled={busy}
+                        onClick={() => {
+                          if (window.confirm("Delete this outing?"))
+                            void run(async () => {
+                              await api(`outings/${record.id}`, "DELETE", {
+                                expectedRevision: record.revision,
+                                requestId: crypto.randomUUID(),
+                              })
+                              setDraft(null)
+                              setRecord(null)
+                              setDirty(false)
+                              setSaved(await api("outings"))
                             })
-                            setDraft(null)
-                            setRecord(null)
-                            setDirty(false)
-                            setSaved(await api("outings"))
-                          })
-                      }}
-                    >
-                      Delete outing
-                    </button>
-                  </>
-                )}
-              </div>
-              {dirty && <p>Unsaved changes</p>}
-            </>
+                        }}
+                      >
+                        Delete outing
+                      </button>
+                    </>
+                  )}
+                </div>
+              </section>
+            </div>
           )}
         </>
       )}

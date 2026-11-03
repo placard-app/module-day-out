@@ -1,6 +1,6 @@
 {
   "name": "@placard-official/places.day-out",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Build outings around saved places",
   "engines": {
@@ -12,7 +12,8 @@
     "build:zip": "node ./scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "screenshots": "playwright test --config playwright.marketing.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
