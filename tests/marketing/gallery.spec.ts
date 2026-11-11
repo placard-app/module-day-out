@@ -17,17 +17,14 @@ test("capture marketing previews from installed modules", async ({ page, baseURL
       })
     ).ok(),
   ).toBeTruthy()
-  for (const [id, version] of [
-    ["day-out", "0.1.1"],
-    ["board", "0.2.0"],
-    ["menus", "0.2.0"],
-    ["pick", "0.2.1"],
-  ]) {
+  for (const id of ["day-out", "board", "menus", "pick"]) {
+    const directory = id === "day-out" ? "." : `../module-${id}`
+    const { version } = JSON.parse(readFileSync(`${directory}/placard.module.json`, "utf8"))
     const r = await page.request.post("/api/modules/upload", {
       headers,
       data: {
         filename: `places.${id}.zip`,
-        contentBase64: readFileSync(`../places.${id}/dist/places.${id}-${version}.zip`).toString(
+        contentBase64: readFileSync(`${directory}/dist/places.${id}-${version}.zip`).toString(
           "base64",
         ),
       },
