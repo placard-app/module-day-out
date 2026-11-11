@@ -10,7 +10,7 @@ Requires SDK 1, `persistent-data`, Node.js 24+ and permissions `places.read` and
 `search.query`. Build with `pnpm build`
 and upload `dist/places.day-out-0.1.1.placard-module` (or ZIP) in the marketplace.
 Enable it and show Day Out in navigation. The command palette offers Plan a Day Out.
-After publishing, the GitHub selector is `https://github.com/placard-app/module-day-out`.
+The GitHub install URL is `https://github.com/placard-app/module-day-out`.
 
 ## Use
 
@@ -61,14 +61,14 @@ Back up `ctx.dataDir/day-out.sqlite` with module writers stopped. It stores priv
 outings and mutation retry records, outside replaceable installed code. No place
 snapshots or core database migrations are used. Plugin updates retain this data.
 
-Run `pnpm typecheck`, `pnpm test`, `pnpm build` from the workspace. Real-host browser
+Run `pnpm typecheck`, `pnpm test`, `pnpm build` from the repository root. Real-host browser
 coverage uses `pnpm test:e2e` and requires
 Docker, Playwright Chromium and a built sibling `Placard` checkout (override with
 `PLACARD_CORE_DIR`). Browser artifacts go to `test-results/`.
 
 ## Marketing screenshots
 
-Run `pnpm build` at the workspace root, then
+Run `pnpm build` at the repository root, then
 `pnpm screenshots` to capture all four
 installed modules against a disposable host with fictional Brussels demo places.
 Requires the same Docker/core/Chromium setup as browser tests. PNGs are written to
